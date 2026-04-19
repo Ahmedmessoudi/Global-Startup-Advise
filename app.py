@@ -52,7 +52,7 @@ logging.basicConfig(level=logging.INFO)
 # ─────────────────────────────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="Startup Country Advisor",
+    page_title="Startup Market Advisor",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -191,6 +191,7 @@ st.markdown("""
     /* Hide Streamlit default elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    
 </style>
 """, unsafe_allow_html=True)
 
@@ -250,11 +251,13 @@ with nav_container:
     col_logo, col_nav, col_settings, col_spacer = st.columns([3, 5.5, 1.5, 1], vertical_alignment="center")
     
     with col_logo:
-        st.markdown(f"<h3 style='margin-top:0px; padding-top:0px;'>{APP_TITLE}</h3>", unsafe_allow_html=True)
+        #st.markdown(f"<h3 style='margin-top:0px; padding-top:0px;'>{APP_TITLE}</h3>", unsafe_allow_html=True)
+        st.markdown(f"### {APP_TITLE}")
+        st.markdown(f"<span style='color:#274AB3; font-size:0.9rem;'>{APP_SUBTITLE}</span>", unsafe_allow_html=True)
     
     with col_nav:
         pages = [
-            "Accueil", "AI StartUp Advisor", "Exploration",
+            "Accueil", "AI StartUp Advisor", "Analyse Visuelle",
             "Modèles Machine Learning", "Données"
         ]
         
@@ -274,13 +277,31 @@ with nav_container:
         # Save selection into URL so a refresh reloads the same page
         st.query_params["page"] = selected_page
     
-    with col_settings:
-        with st.popover("📖 Glossaire", use_container_width=True):
-            glossary_html = '<div class="glossary-scroll">'
+   
+    # ─────────────────────────────────────────────────────────────────────────────
+    # SIDEBAR — GLOSSAIRE
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    with st.sidebar:
+        st.markdown("### 📖 Glossaire")
+
+        with st.expander("Voir les termes", expanded=False):
+            st.markdown('<div class="glossary-scroll">', unsafe_allow_html=True)
+
             for term, definition in GLOSSARY.items():
-                glossary_html += f'<div class="glossary-term"><b>{term}:</b> {definition}</div>'
-            glossary_html += '</div>'
-            st.markdown(glossary_html, unsafe_allow_html=True)
+                st.markdown(
+                    f"""
+                    <div class="glossary-term">
+                        <b>{term}</b><br>
+                        <span style="font-size:0.8rem; color:#555;">
+                            {definition}
+                        </span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
@@ -445,7 +466,7 @@ elif selected_page == "Accueil":
             st.session_state.analysis_context = build_llm_context(
                 target_country=selected_country,
                 sector=selected_sector,
-                startup_description="Exploration du dataset",
+                startup_description="Analyse Visuelle des Données du dataset",
                 df=df,
                 n_alternatives=5
             )
@@ -459,7 +480,7 @@ elif selected_page == "Accueil":
         st.error(ctx["error"])
     else:
         st.divider()
-        st.markdown(f"### 📊 Aperçu des Performances : **{country}** — Secteur {sector.title()}")
+        st.markdown(f"### Aperçu des Performances : **{country}** — Secteur {sector.title()}")
 
         # ── Row 1: Key metrics ────────────────────────────────────────────────
         col1, col2, col3, col4 = st.columns(4)
@@ -601,10 +622,10 @@ elif selected_page == "Accueil":
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TAB 3b: EXPLORATION (SEABORN)
+# TAB 3b: Analyse Visuelle des Données (SEABORN)
 # ─────────────────────────────────────────────────────────────────────────────
 
-elif selected_page == "Exploration":
+elif selected_page == "Analyse Visuelle":
     df = st.session_state.df
 
     # ─────────────────────────────────────────────────────────────
@@ -622,24 +643,24 @@ elif selected_page == "Exploration":
     # ─────────────────────────────────────────────────────────────
     st.markdown(
         "<div style='margin-bottom: 10px; margin-top: 5px;'>"
-        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>📈 Exploration des Données avec Seaborn  —  </span>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>Analyse Visuelle des Données avec Seaborn  —  </span>"
         "<span style='font-size: 0.85rem; color: #64748b;'>Analyse exploratoire des données : distributions, corrélations, outliers et pairplots.</span>"
         "</div>", 
         unsafe_allow_html=True
     )
 
     # ─────────────────────────────────────────────────────────────
-    # EXPLORATION TABS
+    # Analyse Visuelle des Données TABS
     # ─────────────────────────────────────────────────────────────
     tab_dist, tab_corr, tab_opp, tab_cluster = st.tabs([
-        "📈 Distributions & Outliers", 
-        "🔗 Corrélations & Pairplot", 
-        "🏆 Scores d'Opportunité", 
-        "🧩 Analyse de Clusters"
+        "Distributions & Outliers", 
+        "Corrélations & Pairplot", 
+        "Scores d'Opportunité", 
+        "Analyse de Clusters"
     ])
 
     with tab_dist:
-        st.markdown("### 📊 Distribution des Features")
+        st.markdown("### Distribution des Features")
         c1, c2, c3 = st.columns([1, 8, 1])
         with c2:
             fig_dist = feature_distributions(df)
@@ -676,7 +697,7 @@ elif selected_page == "Exploration":
 
 
     with tab_corr:
-        st.markdown("### 🌡️ Matrice de Corrélation")
+        st.markdown("### Matrice de Corrélation")
         c1, c2, c3 = st.columns([1.5, 6, 1.5])
         with c2:
             fig_corr = correlation_heatmap(df)
@@ -685,7 +706,7 @@ elif selected_page == "Exploration":
 
         st.divider()
 
-        st.markdown("### 🎲 Pairplot des Features")
+        st.markdown("### Pairplot des Features")
         st.markdown("Analyse multivariée sur les principales features.")
         c1, c2, c3 = st.columns([1.5, 6, 1.5])
         with c2:
@@ -695,7 +716,7 @@ elif selected_page == "Exploration":
 
 
     with tab_opp:
-        st.markdown("### 🎯 Distribution des Scores d'Opportunité")
+        st.markdown("### Distribution des Scores d'Opportunité")
         c1, c2, c3 = st.columns([1.5, 6, 1.5])
         with c2:
             fig_opp = opportunity_score_distribution(df)
@@ -704,7 +725,7 @@ elif selected_page == "Exploration":
 
         st.divider()
 
-        st.markdown("### 🏆 Top 10 vs Bottom 10 Pays")
+        st.markdown("### Classement des Pays selon leur Potentiel")
         st.markdown("Comparaison directe des meilleurs et des pires pays selon le score d'opportunité.")
         c1, c2, c3 = st.columns([0.5, 9, 0.5])
         with c2:
@@ -714,16 +735,21 @@ elif selected_page == "Exploration":
 
 
     with tab_cluster:
-        st.markdown("### 🧩 Répartition et Scores des Clusters")
-        col_pie, col_violin = st.columns(2)
-        with col_pie:
+        st.markdown("### Répartition et Scores des Clusters")
+
+        col1, col2, col3 = st.columns([1, 2, 1])  # centre le contenu
+
+        with col2:
             fig_pie = cluster_composition_plot(df)
-            st.pyplot(fig_pie, use_container_width=True)
+            fig_pie.set_size_inches(8, 5)
+            st.pyplot(fig_pie)
             plt.close(fig_pie)
 
-        with col_violin:
+            st.divider()
+
             fig_vio = violin_score_by_cluster(df)
-            st.pyplot(fig_vio, use_container_width=True)
+            fig_vio.set_size_inches(12, 8)
+            st.pyplot(fig_vio)
             plt.close(fig_vio)
 
 
@@ -742,7 +768,7 @@ elif selected_page == "Modèles Machine Learning":
 
     st.markdown(
         "<div style='margin-bottom: 10px; margin-top: 5px;'>"
-        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>🤖 Apprentissage Supervisé — Model Manager  —  </span>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>Apprentissage Supervisé — Model Manager  —  </span>"
         "<span style='font-size: 0.85rem; color: #64748b;'>Architecture ML avancée avec 3 tâches de classification, 3 algorithmes, GridSearchCV, et auto-sélection.</span>"
         "</div>", 
         unsafe_allow_html=True
@@ -789,7 +815,7 @@ elif selected_page == "Modèles Machine Learning":
     st.divider()
 
     # ── Train Models (ModelManager) ───────────────────────────────────────
-    st.markdown('<div class="section-header">⚙️ Entraînement des Modèles (GridSearchCV, CV=4)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Entraînement des Modèles (GridSearchCV, CV=4)</div>', unsafe_allow_html=True)
 
     if st.button("Lancer l'entraînement des modèles", type="primary"):
         with st.spinner(f"Entraînement en cours — Tâche : {task_info['name']}..."):
@@ -923,7 +949,7 @@ elif selected_page == "Modèles Machine Learning":
 elif selected_page == "Données":
     st.markdown(
         "<div style='margin-bottom: 10px; margin-top: 5px;'>"
-        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>⚙️ Pipeline de Data Mining  —  </span>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>Pipeline de Data Mining  —  </span>"
         "<span style='font-size: 0.85rem; color: #64748b;'>Cet onglet montre la chaîne et le processus de data mining complet utilisé pour analyser les pays.</span>"
         "</div>", 
         unsafe_allow_html=True

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def _get_client(api_key: str) -> Groq:
-    return Groq(api_key=api_key)
+    return Groq(api_key="votre_cle_api_ici")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -160,8 +160,8 @@ SECTOR_WEIGHTS = {
 SECTORS = list(SECTOR_WEIGHTS.keys())
 
 # ── UI ────────────────────────────────────────────────────────────────────────
-APP_TITLE = "🌍 Startup Country Advisor"
-APP_SUBTITLE = "Powered by CIA World Factbook Data Mining + Groq AI"
+APP_TITLE = "🌍 Startup Market Advisor"
+APP_SUBTITLE = "Votre guide intelligent pour choisir le bon marché"
 
 GLOSSARY = {
     "Data Cleaning": "Removing/imputing missing values and standardizing data formats.",
