@@ -23,6 +23,8 @@ En combinant des pipelines rigoureux de traitement de données, des modèles d'a
 L'architecture modulaire du projet assure la séparation des préoccupations et la maintenabilité du code :
 
 ```text
+├── .streamlit/               # Configuration de l'interface Streamlit
+├── .env                      # Variables d'environnement (clés API)
 ├── app.py                    # Point d'entrée de l'application Streamlit et interface utilisateur
 ├── data_pipeline.py          # Logique de chargement, nettoyage et ingénierie des données
 ├── ml_models.py              # Architecture d'apprentissage supervisé (ModelManager, GridSearchCV)
@@ -31,6 +33,10 @@ L'architecture modulaire du projet assure la séparation des préoccupations et 
 ├── visualizations.py         # Fonctions de visualisation interactive (Plotly)
 ├── seaborn_viz.py            # Fonctions d'analyse exploratoire des données (Seaborn)
 ├── config.py                 # Configuration globale, pondérations sectorielles et constantes
+├── requirements.txt          # Dépendances du projet
+├── architecture_plan.md      # Plan détaillé de l'architecture du projet
+├── STARTUP_COUNTRY_ADVISOR_PROJECT.md # Cahier des charges et spécifications
+├── Description.txt           # Description textuelle du concept et du projet
 └── data/
     └── factbook.csv          # Base de données source (CIA World Factbook)
 ```
