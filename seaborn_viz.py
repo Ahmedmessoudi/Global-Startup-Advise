@@ -19,12 +19,12 @@ MID_BLUE = "#4A7BF7"
 LIGHT_BLUE = "#A3BFF5"
 PALE_BLUE = "#E8EEFB"
 ACCENT_BLUE = "#6C9CFF"
-TEXT_DARK = "#000000"
-TEXT_MED = "#000000"
-TEXT_LIGHT = "#000000"
-BG_WHITE = "#FFFFFF"
-GRID_COLOR = "#E2E8F0"
-BORDER_COLOR = "#CBD5E1"
+TEXT_DARK = "#808080"
+TEXT_MED = "#808080"
+TEXT_LIGHT = "#808080"
+BG_WHITE = "none"
+GRID_COLOR = "#808080"
+BORDER_COLOR = "#808080"
 
 # Monochrome blue palette for categorical/sequential data
 BLUE_PALETTE = [PRIMARY, MID_BLUE, DARK_BLUE, LIGHT_BLUE, ACCENT_BLUE]
@@ -41,7 +41,7 @@ _LIGHT_RC = {
     "ytick.color": TEXT_MED,
     "axes.edgecolor": BORDER_COLOR,
     "grid.color": GRID_COLOR,
-    "grid.alpha": 0.6,
+    "grid.alpha": 0.2,
     "font.family": "sans-serif",
     "axes.spines.top": False,
     "axes.spines.right": False,
@@ -66,7 +66,7 @@ def correlation_heatmap(df: pd.DataFrame):
     corr.index = labels
     corr.columns = labels
 
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(7, 5))
     cmap = sns.light_palette(PRIMARY, as_cmap=True)
     sns.heatmap(
         corr, annot=True, cmap="coolwarm", center=0, square=True,
@@ -92,7 +92,7 @@ def feature_distributions(df: pd.DataFrame):
     cols = 3
     rows = (n + cols - 1) // cols
 
-    fig, axes = plt.subplots(rows, cols, figsize=(14, 4 * rows))
+    fig, axes = plt.subplots(rows, cols, figsize=(9, 2.5 * rows))
     axes = axes.flatten() if n > 1 else [axes]
 
     for i, feat in enumerate(features):
@@ -117,9 +117,9 @@ def class_distribution_plot(y: pd.Series):
     """Distribution des classes (target imbalance check)."""
     _apply_style()
 
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(5, 3))
 
-    sns.countplot(x=y, hue=y, palette=BLUE_PALETTE, ax=ax, legend=False, edgecolor=BG_WHITE)
+    sns.countplot(x=y, hue=y, palette=BLUE_PALETTE, ax=ax, legend=False, edgecolor=TEXT_DARK)
 
     ax.set_title("Distribution des Classes (Target)", fontsize=13, color=TEXT_DARK, pad=12, fontweight="600")
     ax.set_xlabel("Classe", color=TEXT_DARK)
@@ -142,10 +142,10 @@ def boxplot_outliers(df: pd.DataFrame):
     plot_df = df[features].copy()
     plot_df.columns = labels
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(9, 4.5))
     bp = sns.boxplot(
         data=plot_df, orient="h", palette=BLUE_PALETTE, ax=ax,
-        flierprops={"marker": "o", "markerfacecolor": DARK_BLUE, "markersize": 5, "markeredgecolor": BG_WHITE},
+        flierprops={"marker": "o", "markerfacecolor": DARK_BLUE, "markersize": 5, "markeredgecolor": TEXT_DARK},
         boxprops={"edgecolor": PRIMARY},
         medianprops={"color": DARK_BLUE, "linewidth": 2},
         whiskerprops={"color": TEXT_MED},
@@ -171,8 +171,8 @@ def pairplot_features(df: pd.DataFrame, max_features: int = 4):
     plot_df = plot_df.rename(columns=labels_map)
 
     g = sns.pairplot(
-        plot_df, hue="cluster_name", palette=BLUE_PALETTE,
-        diag_kind="kde", plot_kws={"alpha": 0.55, "s": 28, "edgecolor": BG_WHITE},
+        plot_df, hue="cluster_name", palette=BLUE_PALETTE, height=1.8,
+        diag_kind="kde", plot_kws={"alpha": 0.55, "s": 28, "edgecolor": TEXT_DARK},
     )
     g.figure.suptitle("Pairplot des Features par Cluster", y=1.02, fontsize=15, color=TEXT_DARK, fontweight="600")
     g.figure.set_facecolor(BG_WHITE)
@@ -187,9 +187,9 @@ def opportunity_score_distribution(df: pd.DataFrame):
     """Distribution des opportunity scores des pays."""
     _apply_style()
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(6, 4))
 
-    sns.histplot(df["opportunity_score"], kde=True, color=PRIMARY, ax=ax, edgecolor=BG_WHITE, alpha=0.75)
+    sns.histplot(df["opportunity_score"], kde=True, color=PRIMARY, ax=ax, edgecolor=TEXT_DARK, alpha=0.75)
 
     ax.set_title("Distribution des Scores d'Opportunité", fontsize=13, color=TEXT_DARK, pad=12, fontweight="600")
     ax.set_xlabel("Score d'Opportunité", color=TEXT_DARK)
@@ -206,12 +206,12 @@ def opportunity_score_distribution(df: pd.DataFrame):
 def confusion_matrix_plot(cm, labels, title: str = "Matrice de Confusion"):
     """Seaborn heatmap-based confusion matrix — blue cmap."""
     _apply_style()
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=(5, 4))
     cmap = sns.light_palette(PRIMARY, as_cmap=True)
     sns.heatmap(
         cm, annot=True, fmt="d", cmap=cmap, square=True,
         xticklabels=labels, yticklabels=labels, ax=ax,
-        linewidths=1.5, linecolor=BG_WHITE,
+        linewidths=1.5, linecolor=TEXT_DARK,
         cbar_kws={"label": "Nombre", "shrink": 0.8},
         annot_kws={"fontsize": 12, "fontweight": "600", "color": TEXT_DARK},
     )
@@ -237,12 +237,12 @@ def feature_importance_plot(importances: dict, title: str = "Importance des Feat
     n = len(sorted_idx)
     colors = [sns.light_palette(PRIMARY, n_colors=n + 2)[i + 2] for i in range(n)]
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(7, 4.5))
     sns.barplot(
         x=[values[i] for i in sorted_idx],
         y=[labels[i] for i in sorted_idx],
         hue=[labels[i] for i in sorted_idx],
-        palette=colors, ax=ax, legend=False, edgecolor=BG_WHITE,
+        palette=colors, ax=ax, legend=False, edgecolor=TEXT_DARK,
     )
     ax.set_title(title, fontsize=14, color=TEXT_DARK, pad=15, fontweight="600")
     ax.set_xlabel("Score d'importance", color=TEXT_DARK)
@@ -264,7 +264,7 @@ def cv_scores_plot(results: dict):
 
     plot_df = pd.DataFrame(data)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(7, 4.5))
     sns.boxplot(data=plot_df, x="Modèle", y="Score CV", hue="Modèle", palette=BLUE_PALETTE[:3], ax=ax, legend=False)
     sns.stripplot(data=plot_df, x="Modèle", y="Score CV", color=DARK_BLUE, size=7, alpha=0.6, ax=ax)
     ax.set_title("Comparaison des Scores de Validation Croisée (CV=4)", fontsize=14, color=TEXT_DARK, pad=15, fontweight="600")
@@ -287,13 +287,13 @@ def feature_selection_plot(scores: dict, pvalues: dict):
 
     sorted_idx = np.argsort(f_scores)[::-1]
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(7, 4.5))
     colors = [PRIMARY if pvalues.get(features[i], 1) < 0.05 else LIGHT_BLUE for i in sorted_idx]
     sns.barplot(
         x=[f_scores[i] for i in sorted_idx],
         y=[labels[i] for i in sorted_idx],
         hue=[labels[i] for i in sorted_idx],
-        palette=colors, ax=ax, legend=False, edgecolor=BG_WHITE,
+        palette=colors, ax=ax, legend=False, edgecolor=TEXT_DARK,
     )
     ax.set_title("Sélection des Features — Scores ANOVA F-test", fontsize=14, color=TEXT_DARK, pad=15, fontweight="600")
     ax.set_xlabel("F-Score (foncé = p < 0.05, clair = p ≥ 0.05)", color=TEXT_DARK)
@@ -311,7 +311,7 @@ def roc_curve_plot(roc_data: dict):
     roc_data: {model_name: {"fpr": array, "tpr": array, "auc": float}}
     """
     _apply_style()
-    fig, ax = plt.subplots(figsize=(10, 7))
+    fig, ax = plt.subplots(figsize=(7, 5))
 
     palette = [PRIMARY, MID_BLUE, DARK_BLUE]
     for i, (name, data) in enumerate(roc_data.items()):
@@ -353,7 +353,7 @@ def learning_curve_plot(estimator, X, y):
     train_mean = train_scores.mean(axis=1)
     test_mean = test_scores.mean(axis=1)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(6.5, 4))
 
     ax.plot(train_sizes, train_mean, label="Score Entraînement", color=PRIMARY, lw=2)
     ax.plot(train_sizes, test_mean, label="Score Validation", color=MID_BLUE, lw=2, linestyle="--")
@@ -388,10 +388,10 @@ def model_comparison_plot(results: dict):
 
     plot_df = pd.DataFrame(data)
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(9, 4.5))
     sns.barplot(
         data=plot_df, x="Métrique", y="Score", hue="Modèle",
-        palette=BLUE_PALETTE[:3], ax=ax, edgecolor=BG_WHITE,
+        palette=BLUE_PALETTE[:3], ax=ax, edgecolor=TEXT_DARK,
     )
     ax.set_title("Comparaison des Modèles — Métriques de Performance", fontsize=14, color=TEXT_DARK, pad=15, fontweight="600")
     ax.set_ylabel("Score", color=TEXT_DARK)
@@ -417,18 +417,18 @@ def top_bottom_countries_plot(df: pd.DataFrame, n: int = 10):
     top = df.nlargest(n, "opportunity_score")[["country", "opportunity_score"]]
     bottom = df.nsmallest(n, "opportunity_score")[["country", "opportunity_score"]]
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
 
     # Top N
     sns.barplot(data=top, y="country", x="opportunity_score", ax=axes[0],
-                color=PRIMARY, edgecolor=BG_WHITE)
+                color=PRIMARY, edgecolor=TEXT_DARK)
     axes[0].set_title(f"Top {n} Pays", fontsize=13, color=TEXT_DARK, fontweight="600")
     axes[0].set_xlabel("Score d'Opportunité")
     axes[0].set_xlim(0, 100)
 
     # Bottom N
     sns.barplot(data=bottom, y="country", x="opportunity_score", ax=axes[1],
-                color=LIGHT_BLUE, edgecolor=BG_WHITE)
+                color=LIGHT_BLUE, edgecolor=TEXT_DARK)
     axes[1].set_title(f"Bottom {n} Pays", fontsize=13, color=TEXT_DARK, fontweight="600")
     axes[1].set_xlabel("Score d'Opportunité")
     axes[1].set_xlim(0, 100)
@@ -447,12 +447,12 @@ def cluster_composition_plot(df: pd.DataFrame):
     _apply_style()
     counts = df["cluster_name"].value_counts()
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(5, 4))
     colors = sns.color_palette(BLUE_PALETTE, n_colors=len(counts))
     wedges, texts, autotexts = ax.pie(
         counts.values, labels=counts.index, autopct="%1.1f%%",
         colors=colors, startangle=90, pctdistance=0.85,
-        wedgeprops=dict(edgecolor=BG_WHITE, linewidth=2),
+        wedgeprops=dict(edgecolor=TEXT_DARK, linewidth=1),
     )
     for t in texts + autotexts:
         t.set_color(TEXT_DARK)
@@ -469,7 +469,7 @@ def violin_score_by_cluster(df: pd.DataFrame):
     """Violin plot of opportunity scores grouped by cluster."""
     _apply_style()
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(8, 4.5))
     sns.violinplot(
         data=df, x="cluster_name", y="opportunity_score",
         hue="cluster_name", palette=BLUE_PALETTE, ax=ax, legend=False,

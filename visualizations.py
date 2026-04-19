@@ -9,11 +9,12 @@ from plotly.subplots import make_subplots
 from config import FEATURE_LABELS, CLUSTER_COLORS, FEATURE_COLS
 
 # ── Professional Blue Palette ────────────────────────────────────────────────
-PRIMARY = "#305CDE"
-ACCENT = "#6C9CFF"
-SUCCESS = "#1B3A8C"
-DANGER = "#A3BFF5"
-NEUTRAL = "#E8EEFB"
+PRIMARY = "#3B82F6"
+ACCENT = "#8B5CF6"
+SUCCESS = "#10B981" # Green
+WARNING = "#F59E0B" # Yellow
+DANGER = "#EF4444"  # Red
+NEUTRAL = "#E2E8F0"
 
 BG_COLOR = "#FFFFFF"
 CARD_COLOR = "#f5f5f5"
@@ -41,7 +42,7 @@ def opportunity_gauge(score: float, country: str, rank: int, total: int) -> go.F
     """
     Circular gauge showing the opportunity score (0-100) for the target country.
     """
-    color = SUCCESS if score >= 66 else (PRIMARY if score >= 33 else DANGER)
+    color = SUCCESS if score >= 66 else (WARNING if score >= 33 else DANGER)
 
     fig = go.Figure(go.Indicator(
         mode="gauge+number+delta",
@@ -53,12 +54,12 @@ def opportunity_gauge(score: float, country: str, rank: int, total: int) -> go.F
             "axis": {"range": [0, 100], "tickcolor": TEXT_COLOR},
             "bar": {"color": color, "thickness": 0.3},
             "steps": [
-                {"range": [0, 33], "color": NEUTRAL},
-                {"range": [33, 66], "color": DANGER},
-                {"range": [66, 100], "color": ACCENT},
+                {"range": [0, 33], "color": "#FFCdd2"}, # Light Red
+                {"range": [33, 66], "color": "#FFF9C4"}, # Light Yellow
+                {"range": [66, 100], "color": "#C8E6C9"}, # Light Green
             ],
             "threshold": {
-                "line": {"color": SUCCESS, "width": 3},
+                "line": {"color": "#475569", "width": 3},
                 "thickness": 0.75,
                 "value": score,
             },
@@ -106,7 +107,7 @@ def radar_chart(
     ))
 
     if alternatives:
-        alt_colors = [ACCENT, SUCCESS]
+        alt_colors = [WARNING, DANGER]
         for i, (alt_name, alt_pct) in enumerate(alternatives[:2]):
             alt_vals = [alt_pct.get(f, 0) for f in FEATURE_COLS if f in alt_pct]
             alt_closed = alt_vals + [alt_vals[0]]
@@ -117,7 +118,7 @@ def radar_chart(
                 fill="toself",
                 name=alt_name,
                 line=dict(color=color, width=2, dash="dash"),
-                fillcolor=f"rgba(108, 156, 255, 0.15)" if i == 0 else "rgba(27, 58, 140, 0.15)",
+                fillcolor=f"rgba(245, 158, 11, 0.15)" if i == 0 else "rgba(239, 68, 68, 0.15)",
             ))
 
     fig.update_layout(
@@ -145,14 +146,19 @@ def top_countries_bar(df: pd.DataFrame, sector: str, target_country: str = None,
     """
     top = df.sort_values("opportunity_score", ascending=False).head(n).copy()
 
-    colors = [SUCCESS if row["country"] == target_country else PRIMARY
-              for _, row in top.iterrows()]
+    line_widths = [2 if row["country"] == target_country else 0 for _, row in top.iterrows()]
+    line_colors = ["#000000" if row["country"] == target_country else "rgba(0,0,0,0)" for _, row in top.iterrows()]
 
     fig = go.Figure(go.Bar(
         x=top["opportunity_score"],
         y=top["country"],
         orientation="h",
-        marker_color=colors,
+        marker=dict(
+            color=top["opportunity_score"],
+            colorscale="RdYlGn",
+            cmin=0, cmax=100,
+            line=dict(width=line_widths, color=line_colors)
+        ),
         text=top["opportunity_score"].round(1).astype(str),
         textposition="inside",
         hovertemplate="<b>%{y}</b><br>Score: %{x:.1f}<extra></extra>",
@@ -186,7 +192,7 @@ def world_map(df: pd.DataFrame, sector: str, target_country: str = None) -> go.F
             "rank": True,
             "cluster_name": True,
         },
-        color_continuous_scale="Blues",
+        color_continuous_scale="RdYlGn",
         range_color=[0, 100],
         labels={"opportunity_score": "Score", "cluster_name": "Cluster"},
         title=f"Carte Mondiale — Secteur {sector.title()}",
@@ -318,7 +324,7 @@ def feature_heatmap(country_list: list, df: pd.DataFrame) -> go.Figure:
         z=z,
         x=feat_labels,
         y=labels,
-        colorscale="Blues",
+        colorscale="RdYlGn",
         zmin=0, zmax=100,
         hovertemplate="<b>%{y}</b><br>%{x}: %{z:.1f}<extra></extra>",
         colorbar=dict(title="Score (0-100)", tickfont=dict(color=TEXT_COLOR)),

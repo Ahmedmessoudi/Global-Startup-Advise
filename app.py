@@ -64,22 +64,25 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Global background white, text always black */
-    .stApp { background-color: #FFFFFF; color: #000000; }
-    p, span, h1, h2, h3, h4, h5, h6, label, div { color: #000000; }
+    /* Global native theme support */
     
     /* ═══ TOP NAVIGATION BAR ═══ */
-    /* Remove any background color from the nav container so it stays white */
-    [data-testid="stMainBlockContainer"] > div > div > div > [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] {
-        padding: 12px 24px;
-        margin-bottom: 8px;
+    /* Remove padding from the main block container to bring navbar to top */
+    [data-testid="stAppViewBlockContainer"], .block-container, [data-testid="stMainBlockContainer"] {
+        padding-top: 0rem !important;
+        padding-bottom: 2rem !important;
+        position: relative;
+        z-index: 999999 !important;
     }
-    [data-testid="stMainBlockContainer"] > div > div > div > [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] h3,
-    [data-testid="stMainBlockContainer"] > div > div > div > [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] span,
-    [data-testid="stMainBlockContainer"] > div > div > div > [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] p,
-    [data-testid="stMainBlockContainer"] > div > div > div > [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] div,
-    [data-testid="stMainBlockContainer"] > div > div > div > [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] label {
-        color: #000000 !important;
+    
+    [data-testid="stHeader"] {
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    [data-testid="stVerticalBlockBorderWrapper"]:first-child [data-testid="stHorizontalBlock"] {
+        padding: 5px 10px;
+        margin-bottom: 0px;
     }
 
     /* Sections style cards */
@@ -90,12 +93,17 @@ st.markdown("""
     [data-testid="stForm"],
     .stDataFrame,
     [data-testid="stTable"] {
-        background-color: #f5f5f5 !important;
+        background-color: var(--secondary-background-color) !important;
         border-radius: 8px;
     }
     
     /* Chat input styling */
-    .stChatInput > div { border: 1px solid #ccc; }
+    .stChatInput > div { border: 1px solid var(--border-color); }
+    
+    div[data-testid="stChatMessageContent"] {
+        font-size: 1.05rem !important;
+        line-height: 1.6 !important;
+    }
     
     /* Metric cards border */
     [data-testid="metric-container"] {
@@ -107,7 +115,8 @@ st.markdown("""
     [data-testid="stRadio"] > div {
         flex-direction: row;
         align-items: center;
-        gap: 20px;
+        gap: 8px;
+        flex-wrap: wrap;
         background-color: transparent;
     }
     
@@ -117,44 +126,41 @@ st.markdown("""
         display: none !important;
     }
 
-    /* Radio labels base style — BLACK text */
+    /* Radio labels base style */
     [data-testid="stRadio"] label {
         font-weight: normal !important;
         border-bottom: 2px solid transparent !important;
         padding-bottom: 3px !important;
         cursor: pointer;
-        color: #000000 !important;
     }
     [data-testid="stRadio"] label p {
         font-weight: normal !important;
-        font-size: 1rem !important;
-        color: #000000 !important;
+        font-size: 0.85rem !important;
     }
     
     /* Radio labels hover */
     [data-testid="stRadio"] label:hover {
-        border-bottom: 2px solid #305CDE !important;
+        border-bottom: 2px solid var(--primary-color) !important;
     }
     [data-testid="stRadio"] label:hover p {
-        font-weight: bold !important;
-        color: #305CDE !important;
+        color: var(--primary-color) !important;
     }
 
     /* Radio labels selected */
     [data-testid="stRadio"] div[role="radiogroup"] > label[data-checked="true"] {
-        border-bottom: 2px solid #305CDE !important;
+        border-bottom: 2px solid var(--primary-color) !important;
     }
     [data-testid="stRadio"] div[role="radiogroup"] > label[data-checked="true"] p {
-        font-weight: bold !important;
-        color: #305CDE !important;
+        color: var(--primary-color) !important;
     }
     
     /* Charts border */
     [data-testid="stPlotlyChart"],
     [data-testid="stImage"] > img {
-        border: 1px solid #000000;
-        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
         padding: 4px;
+        background-color: var(--secondary-background-color);
     }
     
     /* Glossary scrollable area */
@@ -166,20 +172,18 @@ st.markdown("""
 
     /* Glossary term */
     .glossary-term {
-        background: #f5f5f5;
-        border-bottom: 1px solid #ccc;
+        background: var(--secondary-background-color);
+        border-bottom: 1px solid var(--border-color);
         padding: 8px 12px;
         margin: 4px 0;
         font-size: 0.85rem;
-        color: #000000;
     }
 
     /* Section headers */
     .section-header {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #000000;
-        border-left: 4px solid #305CDE;
+        border-left: 4px solid var(--primary-color);
         padding-left: 10px;
         margin: 16px 0 10px 0;
     }
@@ -242,26 +246,36 @@ def check_data_file() -> bool:
 # --- Header & Nav row ---
 nav_container = st.container()
 with nav_container:
-    col_logo, col_nav, col_settings = st.columns([3, 6, 2], vertical_alignment="center")
+    # We add a spacer to leave space for the Native Streamlit "Deploy" button on the far right
+    col_logo, col_nav, col_settings, col_spacer = st.columns([3, 5.5, 1.5, 1], vertical_alignment="center")
     
     with col_logo:
-        st.markdown(f"### {APP_TITLE}")
-        st.markdown(f"<span style='color:#A3BFF5; font-size:0.9rem;'>{APP_SUBTITLE}</span>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='margin-top:0px; padding-top:0px;'>{APP_TITLE}</h3>", unsafe_allow_html=True)
     
     with col_nav:
         pages = [
             "Accueil", "AI StartUp Advisor", "Exploration",
             "Modèles Machine Learning", "Données"
         ]
+        
+        # Check URL for previously selected page to persist across refreshes
+        query_page = st.query_params.get("page", "Accueil")
+        if query_page not in pages:
+            query_page = "Accueil"
+            
         selected_page = st.radio(
             "Navigation",
             pages,
+            index=pages.index(query_page),
             horizontal=True,
             label_visibility="collapsed",
         )
+        
+        # Save selection into URL so a refresh reloads the same page
+        st.query_params["page"] = selected_page
     
     with col_settings:
-        with st.expander("📖 Glossaire"):
+        with st.popover("📖 Glossaire", use_container_width=True):
             glossary_html = '<div class="glossary-scroll">'
             for term, definition in GLOSSARY.items():
                 glossary_html += f'<div class="glossary-term"><b>{term}:</b> {definition}</div>'
@@ -275,42 +289,24 @@ st.divider()
 # ─────────────────────────────────────────────────────────────────────────────
 
 if selected_page == "AI StartUp Advisor":
-    st.markdown("### 💬 AI StartUp Advisor")
     st.markdown(
-        "Décrivez votre startup et le pays dans lequel vous souhaitez vous lancer. "
-        "J'exécuterai une analyse complète de data mining en utilisant les données du CIA World Factbook."
+        "<div style='margin-bottom: 15px; margin-top: 5px;'>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>💬 AI StartUp Advisor  —  </span>"
+        "<span style='font-size: 0.85rem; color: #64748b;'>Décrivez votre startup et le pays cible pour une analyse automatique propulsée par CIA World Factbook.</span>"
+        "</div>", 
+        unsafe_allow_html=True
     )
 
-    # Example prompts
-    with st.expander("💡 Exemples de prompts"):
-        examples = [
-            "Je veux lancer une startup fintech en Tunisie",
-            "Ma plateforme edtech cible les étudiants au Nigeria",
-            "Nous développons un SaaS logistique pour le marché de l'Asie du Sud-Est, en commençant par le Vietnam",
-            "J'ai une startup healthtech pour les zones rurales — quel pays africain est le meilleur ?",
-            "Comparez le Maroc et l'Égypte pour une entreprise de commerce électronique",
-        ]
-        for ex in examples:
-            if st.button(f"→ {ex}", key=f"ex_{ex[:20]}"):
-                # Clicking an example prompt sends it directly as user input
-                st.session_state["_pending_prompt"] = ex
-                st.rerun()
-
-    st.divider()
-
     # Chat history display
-    chat_container = st.container(height=480)
+    chat_container = st.container(height=500)
     with chat_container:
         if not st.session_state.messages:
             st.markdown(
                 """
-                <div style='text-align:center; color:#475569; padding:80px 20px;'>
+                <div style='text-align:center; color:#475569; padding:20px 20px;'>
                     <div style='font-size:3rem'>🌍</div>
                     <div style='font-size:1.1rem; margin-top:10px; color:#1E293B; font-weight:600;'>
                         Parlez-moi de votre startup et du pays ciblé.
-                    </div>
-                    <div style='font-size:0.9rem; color:#64748B; margin-top:8px;'>
-                        Exemple : "Je veux lancer une startup fintech en Tunisie"
                     </div>
                 </div>
                 """,
@@ -324,13 +320,6 @@ if selected_page == "AI StartUp Advisor":
     # Chat input
     user_input = st.chat_input("Décrivez votre startup et le pays ciblé...")
 
-    # Handle pending prompt from example buttons
-    _from_example = False
-    if st.session_state.get("_pending_prompt"):
-        user_input = st.session_state.pop("_pending_prompt")
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        _from_example = True
-
     if user_input:
         # Validate prerequisites
         if not st.session_state.groq_api_key:
@@ -341,9 +330,8 @@ if selected_page == "AI StartUp Advisor":
             st.error("⚠️ Dataset not found. Please download `factbook.csv` and place it in `data/`.")
             st.stop()
 
-        # Add user message to history (only if not already added from example)
-        if not _from_example:
-            st.session_state.messages.append({"role": "user", "content": user_input})
+        # Add user message to history
+        st.session_state.messages.append({"role": "user", "content": user_input})
 
         # Determine if this is a new analysis or a follow-up
         is_new_analysis = (
@@ -632,117 +620,111 @@ elif selected_page == "Exploration":
     # ─────────────────────────────────────────────────────────────
     # TITLE
     # ─────────────────────────────────────────────────────────────
-    st.markdown("### Exploration des Données avec Seaborn")
     st.markdown(
-        "Analyse exploratoire des données : distributions, corrélations, outliers et pairplots."
+        "<div style='margin-bottom: 10px; margin-top: 5px;'>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>📈 Exploration des Données avec Seaborn  —  </span>"
+        "<span style='font-size: 0.85rem; color: #64748b;'>Analyse exploratoire des données : distributions, corrélations, outliers et pairplots.</span>"
+        "</div>", 
+        unsafe_allow_html=True
     )
 
     # ─────────────────────────────────────────────────────────────
-    # 1. DISTRIBUTIONS
+    # EXPLORATION TABS
     # ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="section-header">📊 Distribution des Features</div>', unsafe_allow_html=True)
+    tab_dist, tab_corr, tab_opp, tab_cluster = st.tabs([
+        "📈 Distributions & Outliers", 
+        "🔗 Corrélations & Pairplot", 
+        "🏆 Scores d'Opportunité", 
+        "🧩 Analyse de Clusters"
+    ])
 
-    fig_dist = feature_distributions(df)
-    st.pyplot(fig_dist)
-    plt.close(fig_dist)
+    with tab_dist:
+        st.markdown("### 📊 Distribution des Features")
+        c1, c2, c3 = st.columns([1, 8, 1])
+        with c2:
+            fig_dist = feature_distributions(df)
+            st.pyplot(fig_dist, use_container_width=True)
+            plt.close(fig_dist)
 
-    st.divider()
+        st.divider()
 
-    # ─────────────────────────────────────────────────────────────
-    # 2. CORRELATION
-    # ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="section-header">Matrice de Corrélation</div>', unsafe_allow_html=True)
+        st.markdown("### ⚠️ Détection des Outliers (IQR)")
+        c1, c2, c3 = st.columns([1, 8, 1])
+        with c2:
+            fig_box = boxplot_outliers(df)
+            st.pyplot(fig_box, use_container_width=True)
+            plt.close(fig_box)
 
-    fig_corr = correlation_heatmap(df)
-    st.pyplot(fig_corr)
-    plt.close(fig_corr)
+        outlier_info = detect_outliers_iqr(df)
+        st.session_state.outlier_info = outlier_info
 
-    st.divider()
+        outlier_rows = [
+            {
+                "Feature": FEATURE_LABELS.get(feat, feat),
+                "Nb Outliers": info["n_outliers"],
+                "% Outliers": info["pct_outliers"],
+                "Q1": info["Q1"],
+                "Q3": info["Q3"],
+                "IQR": info["IQR"],
+                "Lower Bound": info["lower_bound"],
+                "Upper Bound": info["upper_bound"],
+            }
+            for feat, info in outlier_info.items()
+        ]
 
-    # ─────────────────────────────────────────────────────────────
-    # 3. OUTLIERS
-    # ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="section-header">Détection des Outliers (IQR)</div>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame(outlier_rows), use_container_width=True, hide_index=True)
 
-    fig_box = boxplot_outliers(df)
-    st.pyplot(fig_box)
-    plt.close(fig_box)
 
-    outlier_info = detect_outliers_iqr(df)
-    st.session_state.outlier_info = outlier_info
+    with tab_corr:
+        st.markdown("### 🌡️ Matrice de Corrélation")
+        c1, c2, c3 = st.columns([1.5, 6, 1.5])
+        with c2:
+            fig_corr = correlation_heatmap(df)
+            st.pyplot(fig_corr, use_container_width=True)
+            plt.close(fig_corr)
 
-    outlier_rows = [
-        {
-            "Feature": FEATURE_LABELS.get(feat, feat),
-            "Nb Outliers": info["n_outliers"],
-            "% Outliers": info["pct_outliers"],
-            "Q1": info["Q1"],
-            "Q3": info["Q3"],
-            "IQR": info["IQR"],
-            "Lower Bound": info["lower_bound"],
-            "Upper Bound": info["upper_bound"],
-        }
-        for feat, info in outlier_info.items()
-    ]
+        st.divider()
 
-    st.dataframe(
-        pd.DataFrame(outlier_rows),
-        use_container_width=True,
-        hide_index=True,
-    )
+        st.markdown("### 🎲 Pairplot des Features")
+        st.markdown("Analyse multivariée sur les principales features.")
+        c1, c2, c3 = st.columns([1.5, 6, 1.5])
+        with c2:
+            fig_pair = pairplot_features(df, max_features=4)
+            st.pyplot(fig_pair, use_container_width=True)
+            plt.close(fig_pair)
 
-    st.divider()
 
-    # ─────────────────────────────────────────────────────────────
-    # 4. OPPORTUNITY SCORE DISTRIBUTION
-    # ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="section-header">Distribution des Scores d\'Opportunité</div>', unsafe_allow_html=True)
+    with tab_opp:
+        st.markdown("### 🎯 Distribution des Scores d'Opportunité")
+        c1, c2, c3 = st.columns([1.5, 6, 1.5])
+        with c2:
+            fig_opp = opportunity_score_distribution(df)
+            st.pyplot(fig_opp, use_container_width=True)
+            plt.close(fig_opp)
 
-    fig_opp = opportunity_score_distribution(df)
-    st.pyplot(fig_opp)
-    plt.close(fig_opp)
+        st.divider()
 
-    st.divider()
+        st.markdown("### 🏆 Top 10 vs Bottom 10 Pays")
+        st.markdown("Comparaison directe des meilleurs et des pires pays selon le score d'opportunité.")
+        c1, c2, c3 = st.columns([0.5, 9, 0.5])
+        with c2:
+            fig_tb = top_bottom_countries_plot(df, n=10)
+            st.pyplot(fig_tb, use_container_width=True)
+            plt.close(fig_tb)
 
-    # ─────────────────────────────────────────────────────────────
-    # 5. TOP vs BOTTOM COUNTRIES
-    # ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="section-header">🏆 Top 10 vs Bottom 10 Pays</div>', unsafe_allow_html=True)
-    st.markdown("Comparaison directe des meilleurs et des pires pays selon le score d'opportunité.")
 
-    fig_tb = top_bottom_countries_plot(df, n=10)
-    st.pyplot(fig_tb)
-    plt.close(fig_tb)
+    with tab_cluster:
+        st.markdown("### 🧩 Répartition et Scores des Clusters")
+        col_pie, col_violin = st.columns(2)
+        with col_pie:
+            fig_pie = cluster_composition_plot(df)
+            st.pyplot(fig_pie, use_container_width=True)
+            plt.close(fig_pie)
 
-    st.divider()
-
-    # ─────────────────────────────────────────────────────────────
-    # 6. CLUSTER COMPOSITION
-    # ─────────────────────────────────────────────────────────────
-    col_pie, col_violin = st.columns(2)
-    with col_pie:
-        st.markdown('<div class="section-header">Répartition des Clusters</div>', unsafe_allow_html=True)
-        fig_pie = cluster_composition_plot(df)
-        st.pyplot(fig_pie)
-        plt.close(fig_pie)
-
-    with col_violin:
-        st.markdown('<div class="section-header">Scores par Cluster (Violin)</div>', unsafe_allow_html=True)
-        fig_vio = violin_score_by_cluster(df)
-        st.pyplot(fig_vio)
-        plt.close(fig_vio)
-
-    st.divider()
-
-    # ─────────────────────────────────────────────────────────────
-    # 7. PAIRPLOT
-    # ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="section-header">Pairplot des Features</div>', unsafe_allow_html=True)
-    st.markdown("Analyse multivariée sur les principales features.")
-
-    fig_pair = pairplot_features(df, max_features=4)
-    st.pyplot(fig_pair)
-    plt.close(fig_pair)
+        with col_violin:
+            fig_vio = violin_score_by_cluster(df)
+            st.pyplot(fig_vio, use_container_width=True)
+            plt.close(fig_vio)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -758,11 +740,12 @@ elif selected_page == "Modèles Machine Learning":
         df = run_pipeline(sector="general", data_path=DATA_PATH)["df"]
         st.session_state.df = df
 
-    st.markdown("### Apprentissage Supervisé — Model Manager")
     st.markdown(
-        "Architecture ML avancée avec **3 tâches de classification**, "
-        "**3 modèles** (Random Forest, SVM, XGBoost), "
-        "**GridSearchCV (CV=4)** et sélection automatique du meilleur modèle."
+        "<div style='margin-bottom: 10px; margin-top: 5px;'>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>🤖 Apprentissage Supervisé — Model Manager  —  </span>"
+        "<span style='font-size: 0.85rem; color: #64748b;'>Architecture ML avancée avec 3 tâches de classification, 3 algorithmes, GridSearchCV, et auto-sélection.</span>"
+        "</div>", 
+        unsafe_allow_html=True
     )
 
     # ── Task Selection ────────────────────────────────────────────────────
@@ -787,9 +770,11 @@ elif selected_page == "Modèles Machine Learning":
     feat_sel = select_features(X, y, k=5)
     st.session_state.feature_sel = feat_sel
 
-    fig_sel = feature_selection_plot(feat_sel["scores"], feat_sel["pvalues"])
-    st.pyplot(fig_sel)
-    plt.close(fig_sel)
+    c1, c2, c3 = st.columns([1.5, 6, 1.5])
+    with c2:
+        fig_sel = feature_selection_plot(feat_sel["scores"], feat_sel["pvalues"])
+        st.pyplot(fig_sel, use_container_width=True)
+        plt.close(fig_sel)
 
     sel_rows = []
     for feat, score in feat_sel["feature_ranking"]:
@@ -849,7 +834,7 @@ elif selected_page == "Modèles Machine Learning":
                     res["confusion_matrix"], res["labels"],
                     title=f"Confusion — {name}",
                 )
-                st.pyplot(fig_cm)
+                st.pyplot(fig_cm, use_container_width=True)
                 plt.close(fig_cm)
 
         st.divider()
@@ -858,9 +843,11 @@ elif selected_page == "Modèles Machine Learning":
         st.markdown('<div class="section-header">Courbes ROC</div>', unsafe_allow_html=True)
         roc_data = mgr.get_roc_data()
         if roc_data:
-            fig_roc = roc_curve_plot(roc_data)
-            st.pyplot(fig_roc)
-            plt.close(fig_roc)
+            c1, c2, c3 = st.columns([1.5, 6, 1.5])
+            with c2:
+                fig_roc = roc_curve_plot(roc_data)
+                st.pyplot(fig_roc, use_container_width=True)
+                plt.close(fig_roc)
 
             # AUC summary
             auc_cols = st.columns(len(roc_data))
@@ -874,17 +861,21 @@ elif selected_page == "Modèles Machine Learning":
 
         # ── Model Comparison ──────────────────────────────────────────────
         st.markdown('<div class="section-header">Comparaison des Modèles</div>', unsafe_allow_html=True)
-        fig_comp = model_comparison_plot(results)
-        st.pyplot(fig_comp)
-        plt.close(fig_comp)
+        c1, c2, c3 = st.columns([0.5, 9, 0.5])
+        with c2:
+            fig_comp = model_comparison_plot(results)
+            st.pyplot(fig_comp, use_container_width=True)
+            plt.close(fig_comp)
 
         st.divider()
 
         # ── Cross-Validation Comparison ───────────────────────────────────
         st.markdown('<div class="section-header">Scores de Validation Croisée (CV=4)</div>', unsafe_allow_html=True)
-        fig_cv = cv_scores_plot(results)
-        st.pyplot(fig_cv)
-        plt.close(fig_cv)
+        c1, c2, c3 = st.columns([1.5, 6, 1.5])
+        with c2:
+            fig_cv = cv_scores_plot(results)
+            st.pyplot(fig_cv, use_container_width=True)
+            plt.close(fig_cv)
 
         st.divider()
 
@@ -899,7 +890,7 @@ elif selected_page == "Modèles Machine Learning":
                         results[name]["feature_importances"],
                         title=f"Importance — {name}",
                     )
-                    st.pyplot(fig_imp)
+                    st.pyplot(fig_imp, use_container_width=True)
                     plt.close(fig_imp)
         else:
             st.info("Aucun modèle ne fournit d'importance des features (SVM n'en a pas).")
@@ -930,8 +921,13 @@ elif selected_page == "Modèles Machine Learning":
 # ─────────────────────────────────────────────────────────────────────────────
 
 elif selected_page == "Données":
-    st.markdown("### Pipeline de Data Mining")
-    st.markdown("Cet onglet montre le processus de data mining utilisé pour analyser les pays.")
+    st.markdown(
+        "<div style='margin-bottom: 10px; margin-top: 5px;'>"
+        "<span style='font-size: 1.1rem; font-weight: 600; color: var(--primary-color);'>⚙️ Pipeline de Data Mining  —  </span>"
+        "<span style='font-size: 0.85rem; color: #64748b;'>Cet onglet montre la chaîne et le processus de data mining complet utilisé pour analyser les pays.</span>"
+        "</div>", 
+        unsafe_allow_html=True
+    )
 
     # Pipeline steps visualization
     steps = [
@@ -949,7 +945,7 @@ elif selected_page == "Données":
             st.markdown(
                 f"""
                 <div style="background:#f5f5f5; border:1px solid #ccc; border-radius:10px;
-                            padding:16px; margin-bottom:12px; min-height:120px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            padding:16px; margin-bottom:12px; height:160px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                     <div style="font-size:1.5rem">{icon}</div>
                     <div style="font-weight:600; color:#1E293B; margin:6px 0;">{title}</div>
                     <div style="font-size:0.85rem; color:#475569;">{desc}</div>
@@ -966,7 +962,7 @@ elif selected_page == "Données":
     weight_df = pd.DataFrame([
         {"Caractéristique": FEATURE_LABELS.get(k, k), "Poids": v * 100}
         for k, v in weights.items() if v > 0
-    ]).sort_values("Weight", ascending=False)
+    ]).sort_values("Poids", ascending=False)
 
     st.dataframe(
         weight_df,
