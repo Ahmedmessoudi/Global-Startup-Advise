@@ -8,25 +8,25 @@ from plotly.subplots import make_subplots
 
 from config import FEATURE_LABELS, CLUSTER_COLORS, FEATURE_COLS
 
-# ── Color palette ─────────────────────────────────────────────────────────────
-PRIMARY = "#1f77b4"
-ACCENT = "#ff7f0e"
-SUCCESS = "#2ca02c"
-DANGER = "#d62728"
-NEUTRAL = "#7f7f7f"
+# ── Professional Blue Palette ────────────────────────────────────────────────
+PRIMARY = "#305CDE"
+ACCENT = "#6C9CFF"
+SUCCESS = "#1B3A8C"
+DANGER = "#A3BFF5"
+NEUTRAL = "#E8EEFB"
 
-BG_COLOR = "#0e1117"
-CARD_COLOR = "#1c1f26"
-TEXT_COLOR = "#fafafa"
+BG_COLOR = "#FFFFFF"
+CARD_COLOR = "#f5f5f5"
+TEXT_COLOR = "#000000"
 
-PLOTLY_TEMPLATE = "plotly_dark"
-
+PLOTLY_TEMPLATE = "plotly_white"
+GRID_COLOR = "#E2E8F0"
 
 def _base_layout(title: str = "", height: int = 400) -> dict:
     return dict(
         title=dict(text=title, font=dict(size=16, color=TEXT_COLOR)),
         paper_bgcolor=BG_COLOR,
-        plot_bgcolor=CARD_COLOR,
+        plot_bgcolor=BG_COLOR,
         font=dict(color=TEXT_COLOR, size=12),
         height=height,
         margin=dict(l=40, r=40, t=60, b=40),
@@ -40,26 +40,25 @@ def _base_layout(title: str = "", height: int = 400) -> dict:
 def opportunity_gauge(score: float, country: str, rank: int, total: int) -> go.Figure:
     """
     Circular gauge showing the opportunity score (0-100) for the target country.
-    Color: red < 33, orange 33-66, green > 66.
     """
-    color = SUCCESS if score >= 66 else (ACCENT if score >= 33 else DANGER)
+    color = SUCCESS if score >= 66 else (PRIMARY if score >= 33 else DANGER)
 
     fig = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=score,
         number={"suffix": "/100", "font": {"size": 36, "color": TEXT_COLOR}},
-        title={"text": f"Opportunity Score<br><span style='font-size:13px'>#{rank} of {total} countries</span>",
+        title={"text": f"Score d'Opportunité<br><span style='font-size:13px'>#{rank} sur {total} pays</span>",
                "font": {"size": 15, "color": TEXT_COLOR}},
         gauge={
             "axis": {"range": [0, 100], "tickcolor": TEXT_COLOR},
             "bar": {"color": color, "thickness": 0.3},
             "steps": [
-                {"range": [0, 33], "color": "#3a1a1a"},
-                {"range": [33, 66], "color": "#3a2f0d"},
-                {"range": [66, 100], "color": "#0d2e1a"},
+                {"range": [0, 33], "color": NEUTRAL},
+                {"range": [33, 66], "color": DANGER},
+                {"range": [66, 100], "color": ACCENT},
             ],
             "threshold": {
-                "line": {"color": "white", "width": 3},
+                "line": {"color": SUCCESS, "width": 3},
                 "thickness": 0.75,
                 "value": score,
             },
@@ -103,7 +102,7 @@ def radar_chart(
         fill="toself",
         name=country,
         line=dict(color=PRIMARY, width=2),
-        fillcolor=f"rgba(31, 119, 180, 0.25)",
+        fillcolor=f"rgba(48, 92, 222, 0.25)",
     ))
 
     if alternatives:
@@ -118,19 +117,19 @@ def radar_chart(
                 fill="toself",
                 name=alt_name,
                 line=dict(color=color, width=2, dash="dash"),
-                fillcolor=f"rgba(255, 127, 14, 0.15)" if i == 0 else "rgba(44, 160, 44, 0.15)",
+                fillcolor=f"rgba(108, 156, 255, 0.15)" if i == 0 else "rgba(27, 58, 140, 0.15)",
             ))
 
     fig.update_layout(
         polar=dict(
             radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=10, color=TEXT_COLOR),
-                            gridcolor="#333"),
-            angularaxis=dict(tickfont=dict(size=11, color=TEXT_COLOR), gridcolor="#333"),
+                            gridcolor=GRID_COLOR),
+            angularaxis=dict(tickfont=dict(size=11, color=TEXT_COLOR), gridcolor=GRID_COLOR),
             bgcolor=CARD_COLOR,
         ),
         showlegend=True,
         legend=dict(font=dict(color=TEXT_COLOR)),
-        **_base_layout(f"Feature Profile: {country} (Percentile Rank)", height=420),
+        **_base_layout(f"Profil des Caractéristiques : {country}", height=420),
     )
     return fig
 
@@ -142,11 +141,11 @@ def radar_chart(
 def top_countries_bar(df: pd.DataFrame, sector: str, target_country: str = None, n: int = 15) -> go.Figure:
     """
     Horizontal bar chart of top N countries by opportunity score.
-    Target country highlighted in accent color.
+    Target country highlighted in dark blue.
     """
     top = df.sort_values("opportunity_score", ascending=False).head(n).copy()
 
-    colors = [ACCENT if row["country"] == target_country else PRIMARY
+    colors = [SUCCESS if row["country"] == target_country else PRIMARY
               for _, row in top.iterrows()]
 
     fig = go.Figure(go.Bar(
@@ -161,8 +160,8 @@ def top_countries_bar(df: pd.DataFrame, sector: str, target_country: str = None,
 
     fig.update_layout(
         yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
-        xaxis=dict(title="Opportunity Score (0-100)", range=[0, 100]),
-        **_base_layout(f"Top {n} Countries — {sector.title()} Sector", height=max(350, n * 28)),
+        xaxis=dict(title="Score d'Opportunité (0-100)", range=[0, 100], gridcolor=GRID_COLOR),
+        **_base_layout(f"Top {n} des Pays — Secteur {sector.title()}", height=max(350, n * 28)),
     )
     return fig
 
@@ -187,18 +186,18 @@ def world_map(df: pd.DataFrame, sector: str, target_country: str = None) -> go.F
             "rank": True,
             "cluster_name": True,
         },
-        color_continuous_scale="RdYlGn",
+        color_continuous_scale="Blues",
         range_color=[0, 100],
         labels={"opportunity_score": "Score", "cluster_name": "Cluster"},
-        title=f"Global Opportunity Map — {sector.title()} Sector",
+        title=f"Carte Mondiale — Secteur {sector.title()}",
         template=PLOTLY_TEMPLATE,
     )
 
     fig.update_layout(
         paper_bgcolor=BG_COLOR,
         geo=dict(bgcolor=BG_COLOR, showframe=False, showcoastlines=True,
-                 coastlinecolor="#444", showland=True, landcolor="#1c2733",
-                 showocean=True, oceancolor="#0a1628"),
+                 coastlinecolor="#CBD5E1", showland=True, landcolor=NEUTRAL,
+                 showocean=True, oceancolor=CARD_COLOR),
         coloraxis_colorbar=dict(title="Score", tickfont=dict(color=TEXT_COLOR)),
         height=480,
         margin=dict(l=0, r=0, t=50, b=0),
@@ -223,9 +222,9 @@ def cluster_scatter(df: pd.DataFrame, target_country: str = None) -> go.Figure:
         hover_name="country",
         hover_data={"opportunity_score": ":.1f", "pca_x": False, "pca_y": False},
         color_discrete_map=CLUSTER_COLORS,
-        title="Country Clusters (PCA 2D Projection)",
+        title="Clusters de Pays (PCA 2D)",
         template=PLOTLY_TEMPLATE,
-        labels={"pca_x": "Principal Component 1", "pca_y": "Principal Component 2"},
+        labels={"pca_x": "Composante Principale 1", "pca_y": "Composante Principale 2"},
     )
 
     # Highlight target country
@@ -236,18 +235,20 @@ def cluster_scatter(df: pd.DataFrame, target_country: str = None) -> go.Figure:
                 x=target_row["pca_x"],
                 y=target_row["pca_y"],
                 mode="markers+text",
-                marker=dict(size=18, color="white", symbol="star",
-                            line=dict(color=ACCENT, width=2)),
+                marker=dict(size=18, color=SUCCESS, symbol="star",
+                            line=dict(color=PRIMARY, width=2)),
                 text=[target_country],
                 textposition="top center",
-                textfont=dict(color=ACCENT, size=12),
+                textfont=dict(color=SUCCESS, size=12),
                 name=f"▶ {target_country}",
                 showlegend=True,
             ))
 
     fig.update_layout(
-        **_base_layout("Country Clusters — PCA Visualization", height=450),
+        **_base_layout("Clusters de Pays — Visualisation PCA", height=450),
         legend=dict(font=dict(color=TEXT_COLOR, size=11)),
+        xaxis=dict(gridcolor=GRID_COLOR),
+        yaxis=dict(gridcolor=GRID_COLOR),
     )
     return fig
 
@@ -267,7 +268,7 @@ def feature_comparison_bar(
     fig = go.Figure()
 
     countries = list(country_scores.keys())
-    palette = [PRIMARY, ACCENT, SUCCESS, "#e377c2", "#17becf"]
+    palette = [PRIMARY, ACCENT, SUCCESS, DANGER, NEUTRAL]
 
     for i, (country, scores) in enumerate(country_scores.items()):
         vals = [scores.get(f, 0) * 100 for f in FEATURE_COLS]  # scale to 0-100
@@ -283,9 +284,9 @@ def feature_comparison_bar(
     fig.update_layout(
         barmode="group",
         xaxis=dict(tickangle=-30, tickfont=dict(size=10)),
-        yaxis=dict(title="Normalized Score (0-100)", range=[0, 100]),
+        yaxis=dict(title="Score Normalisé (0-100)", range=[0, 100], gridcolor=GRID_COLOR),
         legend=dict(font=dict(color=TEXT_COLOR)),
-        **_base_layout("Feature Comparison Across Countries", height=420),
+        **_base_layout("Comparaison des Caractéristiques", height=420),
     )
     return fig
 
@@ -317,7 +318,7 @@ def feature_heatmap(country_list: list, df: pd.DataFrame) -> go.Figure:
         z=z,
         x=feat_labels,
         y=labels,
-        colorscale="RdYlGn",
+        colorscale="Blues",
         zmin=0, zmax=100,
         hovertemplate="<b>%{y}</b><br>%{x}: %{z:.1f}<extra></extra>",
         colorbar=dict(title="Score (0-100)", tickfont=dict(color=TEXT_COLOR)),
@@ -326,7 +327,7 @@ def feature_heatmap(country_list: list, df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         xaxis=dict(tickangle=-30, tickfont=dict(size=10)),
         yaxis=dict(tickfont=dict(size=11)),
-        **_base_layout("Feature Heatmap — Country Comparison", height=max(350, len(labels) * 35 + 100)),
+        **_base_layout("Heatmap des Caractéristiques", height=max(350, len(labels) * 35 + 100)),
     )
     return fig
 
@@ -347,15 +348,15 @@ def data_quality_chart(df_raw: pd.DataFrame, df_clean: pd.DataFrame) -> go.Figur
     after = [round((1 - df_clean[c].isna().mean()) * 100, 1) if c in df_clean.columns else 100 for c in cols]
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(name="Before Cleaning", x=cols, y=before,
-                         marker_color=DANGER, opacity=0.7))
-    fig.add_trace(go.Bar(name="After Cleaning", x=cols, y=after,
-                         marker_color=SUCCESS, opacity=0.9))
+    fig.add_trace(go.Bar(name="Avant Nettoyage", x=cols, y=before,
+                         marker_color=DANGER, opacity=0.8))
+    fig.add_trace(go.Bar(name="Après Nettoyage", x=cols, y=after,
+                         marker_color=PRIMARY, opacity=1.0))
 
     fig.update_layout(
         barmode="group",
         xaxis=dict(tickangle=-40, tickfont=dict(size=9)),
-        yaxis=dict(title="Completeness (%)", range=[0, 105]),
-        **_base_layout("Data Quality: Completeness Before & After Cleaning", height=380),
+        yaxis=dict(title="Complétude (%)", range=[0, 105], gridcolor=GRID_COLOR),
+        **_base_layout("Qualité des Données : Complétude Avant & Après", height=380),
     )
     return fig

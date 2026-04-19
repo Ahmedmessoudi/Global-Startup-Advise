@@ -1,0 +1,15 @@
+PROJET 
+Chaque groupe est chargé de préparer une présentation de 10 minutes.
+Vous êtes priés de :
+•	Choisir un jeu de données parmi les propositions fournies ou suggérer un autre jeu de données.
+•	Afficher et interpréter les données.
+•	Visualiser les données en utilisant les fonctions de seaborn.
+•	Vérifier la présence de valeurs aberrantes dans le jeu de données.
+•	Intégrer des étapes de pré-traitement adaptées au jeu de données.
+•	Ajouter une étape de sélection des caractéristiques les plus pertinentes en fonction du jeu de données.
+•	Effectuer un apprentissage sur au moins deux modèles différents.
+•	Fournir une description détaillée des modèles choisis, incluant leur définition, des figures, et une explication des étapes.
+•	Pour chaque modèle, déterminer les paramètres optimaux avec une validation croisée (CV=4).
+•	Afficher les matrices de confusion.
+•	Résumer les performances obtenues dans des tableaux récapitulatifs.
+•	Vous avez la liberté d'ajouter d'autres étapes que vous estimez importantes.

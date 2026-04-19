@@ -1,93 +1,98 @@
-# 🌍 Startup Country Advisor
+# 🌍 Global Startup Advisor : Plateforme d'Intelligence de Marché
 
-**Find your next startup home with Data Mining & AI.**
+## 1. Aperçu du Projet
 
-Startup Country Advisor is a data-driven intelligence tool designed to help entrepreneurs and founders identify the best countries for their next venture. By processing the **CIA World Factbook** through a rigorous data mining pipeline and synthesizing insights with **Groq AI (Qwen-QwQ-32b)**, this application provides actionable, sector-specific recommendations.
+**Global Startup Advisor** est une plateforme analytique d'aide à la décision destinée aux entrepreneurs et aux fondateurs de startups. Ce projet s'inscrit dans le cadre d'une démarche académique de **Data Mining** et d'**Apprentissage Automatique (Machine Learning)**. Il a pour objectif d'évaluer la viabilité et le potentiel de succès d'un projet entrepreneurial dans un pays donné, en se basant sur les indicateurs macroéconomiques du **CIA World Factbook**.
 
----
-
-## 🚀 Key Features
-
-- **🧠 Intent-Aware Chat**: Describe your startup idea in natural language, and the AI will extract your target country and industry sector.
-- **📊 7-Feature Data Mining Pipeline**:
-    - **Market Size**: Evaluates population and GDP scale.
-    - **Digital Penetration**: Measures internet usage and connectivity.
-    - **Economic Stability**: Factors in inflation and public debt.
-    - **Growth Potential**: Looks at GDP growth and labor market health.
-    - **Infrastructure & Trade**: Analyzes electricity, mobile subsciptions, and trade openness.
-    - **Human Capital**: Weighted by literacy rates and wealth per capita.
-- **🤖 Results Synthesis**: Receive a structured analysis including Opportunity Assessments, Risk/Reward breakdowns, and calculated rankings.
-- **🗺️ Interactive Visualizations**:
-    - **Global Opportunity Map**: Choropleth maps coloring the world by potential.
-    - **Radar Profiles**: Compare a country's percentile rank across all 7 features.
-    - **K-Means Clustering**: Discover "Similar Markets" to your target country based on economic patterns.
-    - **PCA Visualization**: See how countries cluster in a 2D projection of the 7D feature space.
+En combinant des pipelines rigoureux de traitement de données, des modèles d'apprentissage non supervisé et supervisé, et l'Intelligence Artificielle générative (Groq API), cette application fournit des recommandations stratégiques, spécifiques à différents secteurs d'activité (Fintech, Edtech, E-commerce, etc.).
 
 ---
 
-## 🛠️ Tech Stack
+## 2. Fonctionnalités Principales
 
-- **Frontend**: Streamlit
-- **LLM Engine**: Groq API (`qwen-qwq-32b`)
-- **Data Analysis**: Pandas, NumPy, Scipy
-- **Machine Learning**: Scikit-Learn (K-Means, PCA, MinMaxScaler)
-- **Visualizations**: Plotly (Radar, Bar, Choropleth, Scatter)
+- **Chat IA Contextuel** : Interface de traitement du langage naturel (NLP) permettant à l'utilisateur de décrire son projet. L'IA extrait automatiquement le pays cible et le secteur d'activité pour lancer l'analyse.
+- **Pipeline de Data Mining Avancé** : Traitement exhaustif des données incluant la gestion des valeurs manquantes, la détection des valeurs aberrantes (Outliers via IQR), et l'ingénierie des caractéristiques pour générer des scores composites (Taille du marché, Pénétration numérique, Stabilité économique, etc.).
+- **Apprentissage Non Supervisé (Clustering)** : Classification des pays ayant des profils économiques similaires à l'aide de l'algorithme **K-Means**, visualisable via une réduction de dimensionnalité **PCA (Analyse en Composantes Principales)**.
+- **Apprentissage Supervisé (Classification)** : Évaluation prédictive avancée grâce à un *Model Manager* intégrant **Random Forest**, **SVM (SVC)** et **XGBoost**. Le pipeline inclut une sélection de variables (ANOVA F-test) et une optimisation des hyperparamètres par **GridSearchCV** (Validation Croisée K-Fold).
+- **Tableau de Bord Analytique** : Suite de visualisations interactives développées avec **Plotly** (Cartes choroplèthes, Graphiques Radar, Jauges de scores) et **Seaborn** (Matrices de corrélation, Pairplots, Graphiques en violon).
 
 ---
 
-## 📂 Project Structure
+## 3. Architecture du Système
+
+L'architecture modulaire du projet assure la séparation des préoccupations et la maintenabilité du code :
 
 ```text
-├── app.py                    # Main Streamlit application & UI
-├── groq_agent.py             # LLM logic (Intent Parsing & Result Synthesis)
-├── data_pipeline.py          # Data mining pipeline (Load -> Clean -> Feature Eng -> Cluster)
-├── results_engine.py         # Scoring, ranking, and comparison logic
-├── visualizations.py         # Plotly chart generation
-├── config.py                 # Sector weights and app constants
-├── data/
-│   └── countries.csv         # CIA World Factbook dataset
-└── STARTUP_COUNTRY_ADVISOR_PROJECT.md  # Detailed technical specification
+├── app.py                    # Point d'entrée de l'application Streamlit et interface utilisateur
+├── data_pipeline.py          # Logique de chargement, nettoyage et ingénierie des données
+├── ml_models.py              # Architecture d'apprentissage supervisé (ModelManager, GridSearchCV)
+├── results_engine.py         # Moteur de scoring pondéré par secteur et logique de comparaison
+├── groq_agent.py             # Agent IA pour le parsing des intentions et la synthèse des rapports
+├── visualizations.py         # Fonctions de visualisation interactive (Plotly)
+├── seaborn_viz.py            # Fonctions d'analyse exploratoire des données (Seaborn)
+├── config.py                 # Configuration globale, pondérations sectorielles et constantes
+└── data/
+    └── factbook.csv          # Base de données source (CIA World Factbook)
 ```
+
+**Technologies Utilisées :**
+- **Frontend / Dashboard** : Streamlit
+- **Traitement de Données & ML** : Pandas, NumPy, Scikit-Learn, XGBoost, SciPy
+- **Visualisation** : Plotly Express, Plotly Graph Objects, Seaborn, Matplotlib
+- **Modélisation LLM** : Groq API 
 
 ---
 
-## 🔧 Setup & Installation
+## 4. Installation
 
-### 1. Prerequisites
-- Python 3.9+
-- A [Groq Cloud API Key](https://console.groq.com/)
+### Prérequis
+- **Python 3.9** ou supérieur.
+- Une clé d'API valide de [Groq Cloud](https://console.groq.com/).
 
-### 2. Clone and Install
+### Étapes de déploiement
+
+1. **Cloner le dépôt :**
 ```bash
-git clone <your-repo-url>
-cd data-mining-project
+git clone <URL_DU_DEPOT>
+cd Global-Startup-Advise
+```
+
+2. **Installer les dépendances :**
+Il est recommandé d'utiliser un environnement virtuel (venv ou conda).
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure Environment
-Create a `.env` file in the root directory:
+3. **Configuration de l'environnement :**
+Créez un fichier `.env` à la racine du projet pour stocker vos clés d'API de manière sécurisée :
 ```env
-GROQ_API_KEY=your_api_key_here
-GROQ_MODEL=qwen/qwen3-32b
+GROQ_API_KEY=votre_cle_api_ici
 ```
 
-### 4. Prepare Data
-Download the `countries.csv` dataset from [Kaggle](https://www.kaggle.com/datasets/lucafrance/the-world-factbook-by-cia/data) and place it in the `data/` directory.
+4. **Préparation des données :**
+Assurez-vous que le fichier `factbook.csv` (données macroéconomiques) est bien présent dans le répertoire `data/`.
 
 ---
 
-## 🚦 Usage
+## 5. Utilisation
 
-Launch the application:
+Pour lancer l'interface utilisateur, exécutez la commande suivante à la racine du projet :
+
 ```bash
 streamlit run app.py
 ```
 
-1. **Describe your startup**: Enter something like *"I want to launch a fintech startup in Tunisia"* or *"My edtech platform targets students in Nigeria"*.
-2. **Review Analysis**: Explore the **Analysis** and **Map** tabs to see how your target compares to global leaders and regional peers.
-3. **Deep Dive**: Use the **Data Pipeline** tab to see exactly how your sector's weights are applied to the raw Factbook indicators.
+### Parcours Utilisateur Typique :
+1. **Accueil** : Visualisez les données globales, filtrez par pays et secteur d'activité, et analysez les indicateurs économiques bruts, la carte mondiale et les profils radars.
+2. **AI StartUp Advisor** : Saisissez une requête en langage naturel (ex: *"Je souhaite créer une plateforme e-commerce en Égypte"*). L'IA synthétisera le rapport d'opportunités, de risques et de recommandations d'alternatives basées sur les données.
+3. **Exploration** : Plongez dans l'analyse exploratoire (EDA) avec des matrices de corrélation, l'analyse des distributions et la composition des clusters.
+4. **Modèles Machine Learning** : Exécutez le pipeline d'apprentissage supervisé en temps réel. Comparez les performances de RandomForest, SVM et XGBoost à travers les matrices de confusion, les courbes ROC et les scores de validation croisée.
 
 ---
 
-## ⚖️ License
-This project is intended for educational and research purposes using public domain data from the CIA World Factbook.
+## 6. Résultats et Évaluation
+
+Le système démontre la pertinence d'une approche orientée données (Data-Driven) pour l'évaluation macroéconomique. 
+- La méthode de **scoring dynamique pondérée** offre une vue sectorielle réaliste (les besoins d'une Fintech diffèrent de ceux de la Logistique).
+- L'approche hybride **Clustering + Classification supervisée** permet d'identifier formellement les caractéristiques les plus discriminantes pour la réussite d'une startup dans une région donnée.
+- L'intégration **LLM** prouve son efficacité pour démocratiser l'accès aux insights complexes de data mining via une synthèse textuelle claire, actionnable et formatée professionnellement.

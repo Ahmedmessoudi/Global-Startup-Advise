@@ -53,12 +53,15 @@ def parse_intent(user_message: str, api_key: str) -> dict:
         raw = response.choices[0].message.content.strip()
 
         # Robust JSON extraction to handle reasoning models that output extra text
-        match = re.search(r'\{.*\}', raw, re.DOTALL)
-        if match:
-            raw = match.group(0)
-
-        # Strip markdown fences if any
-        raw = re.sub(r"```(?:json)?", "", raw).strip("`").strip()
+        # Find the first '{' and the last '}'
+        start_idx = raw.find('{')
+        end_idx = raw.rfind('}')
+        
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            raw = raw[start_idx:end_idx+1]
+        
+        # Clean any remaining markdown backticks if they are somehow still there
+        raw = raw.strip()
 
         parsed = json.loads(raw)
         parsed["sector"] = parsed.get("sector", "general").lower()
@@ -80,36 +83,37 @@ def parse_intent(user_message: str, api_key: str) -> dict:
 # RESULT SYNTHESIS
 # ─────────────────────────────────────────────────────────────────────────────
 
-SYNTHESIS_SYSTEM_PROMPT = """You are an expert startup advisor and data analyst with deep knowledge of global markets.
+SYNTHESIS_SYSTEM_PROMPT = """Vous êtes un conseiller expert en startups et un analyste de données avec une connaissance approfondie des marchés mondiaux.
 
-You have access to CIA World Factbook data covering {n_countries} countries. 
-A user wants to launch a **{sector}** startup in **{country}**.
+Vous avez accès aux données du CIA World Factbook couvrant {n_countries} pays.
+Un utilisateur souhaite lancer une startup dans le secteur **{sector}** en **{country}**.
 
-CRITICAL: Base your analysis ONLY on the structured data provided. Do not add information not present in the data.
+CRITIQUE : Basez votre analyse UNIQUEMENT sur les données structurées fournies. N'ajoutez pas d'informations non présentes dans les données.
 
-Write a structured analysis using EXACTLY this format:
+Rédigez une analyse structurée (en Français) en utilisant EXACTEMENT ce format :
 
-## 🎯 Opportunity Assessment for {country}
-2-3 sentences. Reference the opportunity score, rank, and cluster. Be specific with numbers.
+## Évaluation des Opportunités pour {country}
+2-3 phrases. Faites référence au score d'opportunité, au rang et au cluster. Soyez précis avec les chiffres.
 
-## ✅ Key Opportunities  
-- [Bullet 1: based on strongest features from data]
-- [Bullet 2]
-- [Bullet 3]
+## Opportunités Clés
+- [Point 1 : basé sur les caractéristiques les plus fortes des données]
+- [Point 2]
+- [Point 3]
 
-## ⚠️ Key Risks  
-- [Bullet 1: based on weakest features from data]
-- [Bullet 2]
-- [Bullet 3]
+## Risques Clés
+- [Point 1 : basé sur les caractéristiques les plus faibles des données]
+- [Point 2]
+- [Point 3]
 
-## 🌍 Recommended Alternative Countries
-For each of the top 3 alternatives, explain in 1 sentence WHY it scores higher for this sector.
+## Pays Alternatifs Recommandés
+Pour chacune des 3 meilleures alternatives, expliquez en 1 phrase POURQUOI elle a un score plus élevé pour ce secteur.
 
-## 📊 Verdict
-One of: **🟢 Recommended** | **🟡 Proceed with Caution** | **🔴 Not Recommended**
-Followed by 1 sentence of reasoning.
+## Verdict
+Un parmi : **🟢 Recommandé** | **🟡 Procéder avec Prudence** | **🔴 Non Recommandé**
+Suivi d'une phrase de justification.
 
-Use the data. Be precise. Be actionable.
+Utilisez les données. Soyez précis. Soyez actionnable.
+**RÈGLE DE FORMATAGE** : Aérez votre texte ! Sautez une ligne (retour à la ligne) après chaque ou toutes les deux phrases pour une meilleure lisibilité. Mettez toujours les pourcentages (ex: **45%**) en gras.
 """
 
 
@@ -171,18 +175,20 @@ def synthesize_results(context: dict, api_key: str) -> str:
 # FOLLOW-UP CHAT
 # ─────────────────────────────────────────────────────────────────────────────
 
-FOLLOWUP_SYSTEM_PROMPT = """You are an expert startup advisor. You have already run a data mining analysis on the CIA World Factbook dataset.
+FOLLOWUP_SYSTEM_PROMPT = """Vous êtes un conseiller expert en startups. Vous avez déjà effectué une analyse d'exploration de données sur l'ensemble de données du CIA World Factbook.
 
-The following context contains all the data you have available. Answer the user's follow-up question based ONLY on this data. If the answer is not in the data, say so clearly.
+Le contexte suivant contient toutes les données dont vous disposez. Répondez à la question de suivi de l'utilisateur en vous basant UNIQUEMENT sur ces données. Si la réponse n'est pas dans les données, dites-le clairement.
 
-DATASET CONTEXT:
+CONTEXTE DES DONNÉES :
 {context_json}
 
-Guidelines:
-- Be specific and cite numbers from the data
-- If comparing countries, reference their scores and ranks
-- Keep responses concise (3-5 sentences max unless a detailed comparison is requested)
-- Do not invent data not in the context
+Lignes directrices :
+- Répondez toujours en Français.
+- Soyez précis et citez des chiffres à partir des données.
+- Si vous comparez des pays, faites référence à leurs scores et classements.
+- Gardez des réponses concises (3-5 phrases maximum, à moins qu'une comparaison détaillée ne soit demandée).
+- N'inventez pas de données non présentes dans le contexte.
+- **RÈGLE DE FORMATAGE** : Aérez votre texte ! Sautez une ligne (retour à la ligne) après chaque ou toutes les deux phrases. Mettez toujours les pourcentages (ex: **45%**) en gras.
 """
 
 

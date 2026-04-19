@@ -272,6 +272,42 @@ def normalize_features(df: pd.DataFrame) -> tuple[pd.DataFrame, MinMaxScaler]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# STEP 4b — OUTLIER DETECTION (IQR METHOD)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def detect_outliers_iqr(df: pd.DataFrame, columns: list = None) -> dict:
+    """
+    Detect outliers using the IQR (Interquartile Range) method.
+    This is a data-quality / preprocessing concern.
+    Returns a dict with outlier info per feature:
+      {col: {n_outliers, pct_outliers, lower_bound, upper_bound, Q1, Q3, IQR}}
+    """
+    if columns is None:
+        columns = [c for c in FEATURE_COLS if c in df.columns]
+
+    outlier_info = {}
+    for col in columns:
+        Q1 = df[col].quantile(0.25)
+        Q3 = df[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
+        mask = (df[col] < lower) | (df[col] > upper)
+        outlier_info[col] = {
+            "n_outliers": int(mask.sum()),
+            "pct_outliers": round(mask.mean() * 100, 1),
+            "lower_bound": round(lower, 4),
+            "upper_bound": round(upper, 4),
+            "Q1": round(Q1, 4),
+            "Q3": round(Q3, 4),
+            "IQR": round(IQR, 4),
+        }
+
+    logger.info(f"[OUTLIERS] Detected outliers in {len(columns)} features")
+    return outlier_info
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # STEP 5 — COUNTRY CLUSTERING (K-MEANS)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -396,6 +432,9 @@ def run_pipeline(sector: str = "general", data_path: str = DATA_PATH) -> dict:
     # Step 4: Normalize
     df_norm, scaler = normalize_features(df_feat)
 
+    # Step 4b: Outlier Detection (on normalized features, for reporting)
+    outlier_info = detect_outliers_iqr(df_norm)
+
     # Step 5: Cluster
     df_clustered, km_model, pca_model = cluster_countries(df_norm)
 
@@ -412,4 +451,5 @@ def run_pipeline(sector: str = "general", data_path: str = DATA_PATH) -> dict:
         "pca": pca_model,
         "sector": sector,
         "n_countries": len(df_scored),
+        "outlier_info": outlier_info,
     }
